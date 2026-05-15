@@ -3,88 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Professional Video Library</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: linear-gradient(135deg, #25D366, #128C7E); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; color: #333; }
-        .container { background-color: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); padding: 40px; max-width: 800px; width: 100%; text-align: center; }
-        .video-container { width: 100%; margin-bottom: 30px; border-radius: 3px; overflow: hidden; background: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        video { width: 100%; display: block; }
-        .urdu-heading { font-family: 'Segoe UI', 'Noto Sans Arabic', sans-serif; color: #075E54; font-size: 1.8rem; margin-bottom: 20px; direction: rtl; }
-        .phone-display { background-color: #f0f0f0; border-radius: 15px; padding: 15px; margin: 20px auto; display: inline-block; font-size: 1.3rem; font-weight: bold; color: #128C7E; }
-        .button-group { display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 20px; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: 15px 35px; border-radius: 10px; font-size: 1.2rem; font-weight: bold; transition: all 0.3s ease; width: 80%; max-width: 300px; }
-        .whatsapp-button { background-color: #25D366; color: white; box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4); }
-        .demo-button { background-color: #3498db; color: white; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4); }
-        .btn:hover { transform: translateY(-3px); filter: brightness(0.9); }
-        .urdu-description { direction: rtl; font-size: 1.1rem; margin-top: 25px; padding: 15px; background-color: #f9f9f9; border-radius: 10px; border-right: 5px solid #25D366; text-align: right; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #0f172a; padding: 20px; color: white; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 15px; margin-bottom: 30px; border: 1px solid #334155; }
+        #linksList { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .video-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s ease; position: relative; }
+        .video-card:hover { transform: translateY(-5px); border-color: #38bdf8; }
+        .play-area { cursor: pointer; margin-bottom: 15px; }
+        .play-icon { width: 50px; height: 50px; background: #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 20px; color: #0f172a; }
+        .video-title { font-size: 16px; font-weight: 600; color: #f1f5f9; margin-bottom: 15px; }
+        .download-btn { background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .download-btn:hover { background: #16a34a; }
+        
+        /* Ad Modal */
+        #adModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; }
+        #adFrame { width: 100%; height: 100%; border: none; }
+        #timerOverlay { position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 50px; font-weight: bold; z-index: 3001; }
+
+        /* Video Player Overlay (Smart Design) */
+        #videoModal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.9); 
+            z-index: 2000; 
+            justify-content: center; 
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .player-wrapper {
+            position: relative;
+            width: 95%; /* Mobile friendly width */
+            max-width: 900px; /* PC friendly max-width */
+            height: auto;
+            max-height: 85vh; /* Prevents overflow */
+            background: #000;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        #mainPlayer, #embedPlayer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Spinner (Loader) */
+        .loader {
+            border: 5px solid #334155;
+            border-top: 5px solid #38bdf8;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Handle Portrait Videos (Smart detection) */
+        .player-wrapper.portrait {
+            max-width: 450px;
+        }
+        .player-wrapper.portrait .video-container {
+            padding-top: 177%; /* 9:16 Aspect Ratio */
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
+<div class="container">
+    <div class="header">
+        <h1>B Videos</h1>
+        <p>Watch or Download high quality videos</p>
+    </div>
+    <div id="linksList"></div>
+</div>
+
+<!-- Video Player Modal -->
+<div id="videoModal">
+    <div class="player-wrapper" id="pWrapper">
+        <button class="close-btn" onclick="closePlayer()">CLOSE ✕</button>
         <div class="video-container">
-            <video controls poster="placeholder.jpg">
-                <source src="https://viralvid.sfo3.cdn.digitaloceanspaces.com/4.mp4" type="video/mp4">
-            </video>
-        </div>
-        
-       <a href="https://loyal-sapphire-xhgoey5wrg.edgeone.dev/" class="btn demo-button" target="_blank">
-            <i class="fas fa-external-link-alt"></i> Demo 3 Video
-       </a>
-
-        <div class="urdu-heading" style="margin-top:20px;">
-            ڈیمو لنک پر کلک کر کے ڈیمو چیک کر لیں باقی ویڈیوز لینی ہو تو واٹس ایپ پر آجائیں 100 ویڈیو 100 روپے میں
-        </div>
-        
-        
-        <div class="phone-display" id="displayNumber">
-            <i class="fas fa-phone-alt"></i> Loading...
-        </div>
-        
-        <div class="button-group">
-            <a href="#" id="whatsappBtn" class="btn whatsapp-button" target="_blank">
-                <i class="fab fa-whatsapp"></i> Message WhatsApp
-            </a>
-        </div>
-
-        <div class="urdu-description">
-            ڈریک واٹس ایپ پر ویڈیوز نہیں ہوتی لنک ہوتا ہے لنک کے اندر ویڈیوز ہیں اچھے والا لنک ہے اور زبردست ویڈیوز ہیں ڈیمو میں ایک دو ویڈیوز نہیں ہیں تنگ نہ کیا کریں واٹس ایپ پر آکر جس نے لنک لینا ہے صرف وہی رابطہ کریں
+            <div class="loader" id="videoLoader"></div>
+            <video id="mainPlayer" controls controlsList="nodownload"></video>
+            <iframe id="embedPlayer" allowfullscreen></iframe>
         </div>
     </div>
-    
-    <br><br>
-    <br>
-    <a href="https://fahad324235.github.io/Maal-Zone/">Free Wala Data</a>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<div id="adModal">
+    <div id="timerOverlay">Please wait: <span id="seconds">15</span>s</div>
+    <iframe id="adFrame" src=""></iframe>
+</div>
 
-        const firebaseConfig = {
-        apiKey: "AIzaSyAveicjExql0Bc5GG2Xh_dVH4eKCa9Yiic",
-        authDomain: "number-change-1.firebaseapp.com",
-        databaseURL: "https://number-change-1-default-rtdb.firebaseio.com",
-        projectId: "number-change-1",
-        storageBucket: "number-change-1.firebasestorage.app",
-        messagingSenderId: "152314359440",
-        appId: "1:152314359440:web:9f321d49aed0bf0521b215"
+<script>
+const videoLinks = [
+    "https://mega.nz/embed/cz1k0SpZ#g-kw4QktnhaLi6ndIUcK1PZMDX2o_5X1U_VUMkwZzPE",
+    "https://mega.nz/embed/c2kAlY4K#zqdT_hh53mDucezNKcUYKtyzUYICADvnFkc2MWCGcdU",
+];
+
+const adLinks = [
+    "https://www.effectivegatecpm.com/fgjvc6xp?key=02a55463acca337410ce3bf28d4c13fa",
+    "https://www.effectivegatecpm.com/etnvcsg5?key=8cdf22590b8d8a5148ae31d2551bbe25",
+    "https://www.effectivegatecpm.com/ynw0tz2k3x?key=d610eba80f701ad43ddbbefa958a170b"
+];
+
+let playCount = 0;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('linksList');
+    videoLinks.forEach((url, index) => {
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.innerHTML = `
+            <div class="play-area" onclick="handlePlay('${url}')">
+                <div class="play-icon">▶</div>
+                <div class="video-title">Video ${index + 1}</div>
+            </div>
+            <button class="download-btn" onclick="startDownloadProcess('${url}')">
+                📥 Download Now
+            </button>
+        `;
+        container.appendChild(card);
+    });
+    setInterval(showRandomAd, 180000);
+});
+
+// جب ایپ بیک گراؤنڈ میں جائے تو ویڈیو بند کر دیں
+document.addEventListener("visibilitychange", function() {
+    if (document.hidden) closePlayer();
+});
+
+function handlePlay(url) {
+    playCount++;
+    if (playCount % 7 === 0) {
+        startAdOnly(() => playVideo(url));
+    } else {
+        playVideo(url);
+    }
+}
+
+function playVideo(url) {
+    const modal = document.getElementById('videoModal');
+    const player = document.getElementById('mainPlayer');
+    const embedPlayer = document.getElementById('embedPlayer');
+    const loader = document.getElementById('videoLoader');
+    const wrapper = document.getElementById('pWrapper');
+
+    modal.style.display = 'flex';
+    loader.style.display = 'block';
+    player.style.display = 'none';
+    embedPlayer.style.display = 'none';
+    wrapper.classList.remove('portrait'); // Reset
+
+    if (url.includes("mega.nz/embed") || url.includes("iframe")) {
+        embedPlayer.style.display = 'block';
+        embedPlayer.src = url;
+        embedPlayer.onload = () => { loader.style.display = 'none'; };
+    } else {
+        player.style.display = 'block';
+        player.src = url;
+        player.onloadedmetadata = function() {
+            // اگر ویڈیو لمبی (Portrait) ہے تو پلیئر کو ایڈجسٹ کریں
+            if (this.videoHeight > this.videoWidth) {
+                wrapper.classList.add('portrait');
+            }
         };
+        player.oncanplay = () => {
+            loader.style.display = 'none';
+            player.play();
+        };
+    }
+}
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const numberRef = ref(db, 'contactSettings/whatsappNumber');
+function closePlayer() {
+    const modal = document.getElementById('videoModal');
+    const player = document.getElementById('mainPlayer');
+    const embedPlayer = document.getElementById('embedPlayer');
+    modal.style.display = 'none';
+    player.pause();
+    player.src = "";
+    embedPlayer.src = "";
+}
 
-        onValue(numberRef, (snapshot) => {
-            let number = snapshot.val() || "6285831792142";
-            
-            // یہ لائن کسی بھی قسم کی اسپیس یا فالتو نشانات کو ختم کر دے گی
-            let cleanNumber = number.toString().replace(/\s+/g, '').replace(/[^0-9]/g, '');
+function startAdOnly(callback) {
+    const adModal = document.getElementById('adModal');
+    const adFrame = document.getElementById('adFrame');
+    const secondsSpan = document.getElementById('seconds');
+    const randomAd = adLinks[Math.floor(Math.random() * adLinks.length)];
+    adFrame.src = randomAd;
+    adModal.style.display = 'block';
+    let timeLeft = 1;
+    secondsSpan.innerText = timeLeft;
 
-            document.getElementById('displayNumber').innerHTML = `<i class="fas fa-phone-alt"></i> +${cleanNumber}`;
-            document.getElementById('whatsappBtn').href = `https://wa.me/${cleanNumber}`;
-        });
-    </script>
+    const timer = setInterval(() => {
+        timeLeft--;
+        secondsSpan.innerText = (timeLeft < 0) ? 0 : timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            adModal.style.display = 'none';
+            adFrame.src = "";
+            if(callback) callback();
+        }
+    }, 1000);
+}
+
+function startDownloadProcess(videoUrl) {
+    startAdOnly(() => triggerDownload(videoUrl));
+}
+
+function showRandomAd() {
+    startAdOnly();
+}
+
+function triggerDownload(url) {
+    let downloadUrl = url;
+    if (url.includes("mega.nz/embed")) {
+        downloadUrl = url.replace("mega.nz/embed", "mega.nz/file");
+    }
+    window.open(downloadUrl, '_blank');
+}
+</script>
 </body>
 </html>
